@@ -1,0 +1,315 @@
+import React, { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
+
+// NHL Teams Data - organized by division
+const NHL_TEAMS = {
+  atlantic: [
+    'Florida Panthers', 'Toronto Maple Leafs', 'Tampa Bay Lightning',
+    'Boston Bruins', 'Buffalo Sabres', 'Ottawa Senators',
+    'Detroit Red Wings', 'Montreal Canadiens'
+  ],
+  metropolitan: [
+    'Carolina Hurricanes', 'New York Rangers', 'Washington Capitals',
+    'New York Islanders', 'Pittsburgh Penguins', 'Philadelphia Flyers',
+    'New Jersey Devils', 'Columbus Blue Jackets'
+  ],
+  central: [
+    'Dallas Stars', 'Colorado Avalanche', 'Winnipeg Jets',
+    'Nashville Predators', 'Minnesota Wild', 'St. Louis Blues',
+    'Arizona Coyotes', 'Chicago Blackhawks'
+  ],
+  pacific: [
+    'Vegas Golden Knights', 'Edmonton Oilers', 'Los Angeles Kings',
+    'Vancouver Canucks', 'Seattle Kraken', 'Calgary Flames',
+    'Anaheim Ducks', 'San Jose Sharks'
+  ]
+};
+
+// Bracket Generation Logic
+const generatePlayoffBracket = () => {
+  // Randomly select playoff teams (3 from each division + 2 wildcards per conference)
+  const getRandomTeams = (division, count) => {
+    const shuffled = [...NHL_TEAMS[division]].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+
+  // Eastern Conference
+  const atlanticTeams = getRandomTeams('atlantic', 3);
+  const metroTeams = getRandomTeams('metropolitan', 3);
+  const eastWildcards = [
+    ...NHL_TEAMS.atlantic.filter(t => !atlanticTeams.includes(t)),
+    ...NHL_TEAMS.metropolitan.filter(t => !metroTeams.includes(t))
+  ].sort(() => Math.random() - 0.5).slice(0, 2);
+
+  // Western Conference
+  const centralTeams = getRandomTeams('central', 3);
+  const pacificTeams = getRandomTeams('pacific', 3);
+  const westWildcards = [
+    ...NHL_TEAMS.central.filter(t => !centralTeams.includes(t)),
+    ...NHL_TEAMS.pacific.filter(t => !pacificTeams.includes(t))
+  ].sort(() => Math.random() - 0.5).slice(0, 2);
+
+  // Create matchups with seeding
+  const eastMatchups = [
+    { team1: atlanticTeams[0], team2: eastWildcards[1], seed1: 'A1', seed2: 'WC2' },
+    { team1: atlanticTeams[1], team2: atlanticTeams[2], seed1: 'A2', seed2: 'A3' },
+    { team1: metroTeams[0], team2: eastWildcards[0], seed1: 'M1', seed2: 'WC1' },
+    { team1: metroTeams[1], team2: metroTeams[2], seed1: 'M2', seed2: 'M3' }
+  ];
+
+  const westMatchups = [
+    { team1: centralTeams[0], team2: westWildcards[1], seed1: 'C1', seed2: 'WC2' },
+    { team1: centralTeams[1], team2: centralTeams[2], seed1: 'C2', seed2: 'C3' },
+    { team1: pacificTeams[0], team2: westWildcards[0], seed1: 'P1', seed2: 'WC1' },
+    { team1: pacificTeams[1], team2: pacificTeams[2], seed1: 'P2', seed2: 'P3' }
+  ];
+
+  return { eastMatchups, westMatchups };
+};
+
+// Simulate a series and return winner
+const simulateSeries = (team1, team2) => {
+  return Math.random() > 0.5 ? team1 : team2;
+};
+
+// Simulate entire bracket
+const simulateBracket = (matchups) => {
+  // Round 1
+  const round1Winners = matchups.map(m => simulateSeries(m.team1, m.team2));
+  
+  // Round 2
+  const round2Winners = [
+    simulateSeries(round1Winners[0], round1Winners[1]),
+    simulateSeries(round1Winners[2], round1Winners[3])
+  ];
+  
+  // Conference Final
+  const conferenceFinal = simulateSeries(round2Winners[0], round2Winners[1]);
+  
+  return {
+    round1: round1Winners,
+    round2: round2Winners,
+    final: conferenceFinal
+  };
+};
+
+// Component
+export default function NHLBracketGenerator() {
+  const [bracket, setBracket] = useState(null);
+  const [eastResults, setEastResults] = useState(null);
+  const [westResults, setWestResults] = useState(null);
+  const [champion, setChampion] = useState(null);
+
+  const generateNewBracket = () => {
+    const newBracket = generatePlayoffBracket();
+    setBracket(newBracket);
+    
+    const east = simulateBracket(newBracket.eastMatchups);
+    const west = simulateBracket(newBracket.westMatchups);
+    
+    setEastResults(east);
+    setWestResults(west);
+    setChampion(simulateSeries(east.final, west.final));
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-white mb-4">
+            🏒 NHL Stanley Cup Playoff Bracket
+          </h1>
+          <button
+            onClick={generateNewBracket}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all transform hover:scale-105"
+          >
+            <RefreshCw size={20} />
+            Generate Random Bracket
+          </button>
+        </div>
+
+        {/* Bracket Display */}
+        {bracket && eastResults && westResults && (
+          <div className="space-y-8">
+            {/* Eastern Conference */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-3xl font-bold text-blue-300 mb-6 text-center">
+                Eastern Conference
+              </h2>
+              
+              <div className="grid grid-cols-4 gap-4">
+                {/* Round 1 */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Round 1</h3>
+                  {bracket.eastMatchups.map((matchup, idx) => (
+                    <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
+                      <div className={`text-sm mb-1 ${eastResults.round1[idx] === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                        {matchup.seed1}: {matchup.team1}
+                      </div>
+                      <div className={`text-sm ${eastResults.round1[idx] === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                        {matchup.seed2}: {matchup.team2}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Round 2 */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Round 2</h3>
+                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                    <div className={`text-sm mb-1 ${eastResults.round2[0] === eastResults.round1[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {eastResults.round1[0]}
+                    </div>
+                    <div className={`text-sm ${eastResults.round2[0] === eastResults.round1[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {eastResults.round1[1]}
+                    </div>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                    <div className={`text-sm mb-1 ${eastResults.round2[1] === eastResults.round1[2] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {eastResults.round1[2]}
+                    </div>
+                    <div className={`text-sm ${eastResults.round2[1] === eastResults.round1[3] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {eastResults.round1[3]}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conference Finals */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Conference Final</h3>
+                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
+                    <div className={`text-sm mb-1 ${eastResults.final === eastResults.round2[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {eastResults.round2[0]}
+                    </div>
+                    <div className={`text-sm ${eastResults.final === eastResults.round2[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {eastResults.round2[1]}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conference Champion */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Champion</h3>
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-4 border-2 border-blue-400 mt-32">
+                    <div className="text-white font-bold text-center">
+                      {eastResults.final}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Western Conference */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-3xl font-bold text-red-300 mb-6 text-center">
+                Western Conference
+              </h2>
+              
+              <div className="grid grid-cols-4 gap-4">
+                {/* Round 1 */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Round 1</h3>
+                  {bracket.westMatchups.map((matchup, idx) => (
+                    <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
+                      <div className={`text-sm mb-1 ${westResults.round1[idx] === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                        {matchup.seed1}: {matchup.team1}
+                      </div>
+                      <div className={`text-sm ${westResults.round1[idx] === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                        {matchup.seed2}: {matchup.team2}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Round 2 */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Round 2</h3>
+                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                    <div className={`text-sm mb-1 ${westResults.round2[0] === westResults.round1[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {westResults.round1[0]}
+                    </div>
+                    <div className={`text-sm ${westResults.round2[0] === westResults.round1[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {westResults.round1[1]}
+                    </div>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                    <div className={`text-sm mb-1 ${westResults.round2[1] === westResults.round1[2] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {westResults.round1[2]}
+                    </div>
+                    <div className={`text-sm ${westResults.round2[1] === westResults.round1[3] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {westResults.round1[3]}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conference Finals */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Conference Final</h3>
+                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
+                    <div className={`text-sm mb-1 ${westResults.final === westResults.round2[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {westResults.round2[0]}
+                    </div>
+                    <div className={`text-sm ${westResults.final === westResults.round2[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                      {westResults.round2[1]}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conference Champion */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-center mb-4">Champion</h3>
+                  <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-lg p-4 border-2 border-red-400 mt-32">
+                    <div className="text-white font-bold text-center">
+                      {westResults.final}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stanley Cup Final */}
+            <div className="bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-xl p-8 border-4 border-yellow-400">
+              <h2 className="text-4xl font-bold text-white mb-6 text-center">
+                🏆 STANLEY CUP FINAL 🏆
+              </h2>
+              <div className="grid grid-cols-3 gap-8 items-center">
+                <div className="bg-white/20 rounded-lg p-6 text-center">
+                  <div className="text-sm text-yellow-200 mb-2">Eastern Champion</div>
+                  <div className={`text-xl font-bold ${champion === eastResults.final ? 'text-white' : 'text-gray-300'}`}>
+                    {eastResults.final}
+                  </div>
+                </div>
+                
+                <div className="text-center text-white text-2xl font-bold">
+                  VS
+                </div>
+                
+                <div className="bg-white/20 rounded-lg p-6 text-center">
+                  <div className="text-sm text-yellow-200 mb-2">Western Champion</div>
+                  <div className={`text-xl font-bold ${champion === westResults.final ? 'text-white' : 'text-gray-300'}`}>
+                    {westResults.final}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 text-center">
+                <div className="text-yellow-200 text-sm mb-2">Stanley Cup Champion</div>
+                <div className="text-4xl font-bold text-white">
+                  {champion}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Instructions */}
+        {!bracket && (
+          <div className="text-center text-white/60 mt-12">
+            <p className="text-lg">Click the button above to generate a random playoff bracket!</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
