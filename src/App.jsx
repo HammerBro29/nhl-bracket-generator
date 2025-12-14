@@ -67,49 +67,27 @@ const generatePlayoffBracket = () => {
   return { eastMatchups, westMatchups };
 };
 
-// Simulate a series and return winner
-const simulateSeries = (team1, team2) => {
-  return Math.random() > 0.5 ? team1 : team2;
-};
-
-// Simulate entire bracket
-const simulateBracket = (matchups) => {
-  // Round 1
-  const round1Winners = matchups.map(m => simulateSeries(m.team1, m.team2));
-  
-  // Round 2
-  const round2Winners = [
-    simulateSeries(round1Winners[0], round1Winners[1]),
-    simulateSeries(round1Winners[2], round1Winners[3])
-  ];
-  
-  // Conference Final
-  const conferenceFinal = simulateSeries(round2Winners[0], round2Winners[1]);
-  
-  return {
-    round1: round1Winners,
-    round2: round2Winners,
-    final: conferenceFinal
-  };
-};
-
 // Component
 export default function NHLBracketGenerator() {
   const [bracket, setBracket] = useState(null);
-  const [eastResults, setEastResults] = useState(null);
-  const [westResults, setWestResults] = useState(null);
+  const [eastRound1Winners, setEastRound1Winners] = useState([]);
+  const [eastRound2Winners, setEastRound2Winners] = useState([]);
+  const [eastFinal, setEastFinal] = useState(null);
+  const [westRound1Winners, setWestRound1Winners] = useState([]);
+  const [westRound2Winners, setWestRound2Winners] = useState([]);
+  const [westFinal, setWestFinal] = useState(null);
   const [champion, setChampion] = useState(null);
 
   const generateNewBracket = () => {
     const newBracket = generatePlayoffBracket();
     setBracket(newBracket);
-    
-    const east = simulateBracket(newBracket.eastMatchups);
-    const west = simulateBracket(newBracket.westMatchups);
-    
-    setEastResults(east);
-    setWestResults(west);
-    setChampion(simulateSeries(east.final, west.final));
+    setEastRound1Winners(new Array(4).fill(null));
+    setEastRound2Winners(new Array(2).fill(null));
+    setEastFinal(null);
+    setWestRound1Winners(new Array(4).fill(null));
+    setWestRound2Winners(new Array(2).fill(null));
+    setWestFinal(null);
+    setChampion(null);
   };
 
   return (
@@ -130,7 +108,7 @@ export default function NHLBracketGenerator() {
         </div>
 
         {/* Bracket Display */}
-        {bracket && eastResults && westResults && (
+        {bracket && (
           <div className="space-y-8">
             {/* Eastern Conference */}
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
@@ -142,50 +120,124 @@ export default function NHLBracketGenerator() {
                 {/* Round 1 */}
                 <div className="space-y-4">
                   <h3 className="text-white font-semibold text-center mb-4">Round 1</h3>
-                  {bracket.eastMatchups.map((matchup, idx) => (
-                    <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
-                      <div className={`text-sm mb-1 ${eastResults.round1[idx] === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                        {matchup.seed1}: {matchup.team1}
-                      </div>
-                      <div className={`text-sm ${eastResults.round1[idx] === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                        {matchup.seed2}: {matchup.team2}
-                      </div>
-                    </div>
-                  ))}
+                  {bracket.eastMatchups.map((matchup, idx) => {
+                    const winner = eastRound1Winners[idx];
+                    if (winner) {
+                      return (
+                        <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
+                          <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                            {matchup.seed1}: {matchup.team1}
+                          </div>
+                          <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                            {matchup.seed2}: {matchup.team2}
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
+                          <button
+                            onClick={() => setEastRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
+                            className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                          >
+                            {matchup.seed1}: {matchup.team1}
+                          </button>
+                          <button
+                            onClick={() => setEastRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
+                            className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                          >
+                            {matchup.seed2}: {matchup.team2}
+                          </button>
+                        </div>
+                      );
+                    }
+                  })}
                 </div>
 
                 {/* Round 2 */}
                 <div className="space-y-4">
                   <h3 className="text-white font-semibold text-center mb-4">Round 2</h3>
-                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
-                    <div className={`text-sm mb-1 ${eastResults.round2[0] === eastResults.round1[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {eastResults.round1[0]}
-                    </div>
-                    <div className={`text-sm ${eastResults.round2[0] === eastResults.round1[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {eastResults.round1[1]}
-                    </div>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
-                    <div className={`text-sm mb-1 ${eastResults.round2[1] === eastResults.round1[2] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {eastResults.round1[2]}
-                    </div>
-                    <div className={`text-sm ${eastResults.round2[1] === eastResults.round1[3] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {eastResults.round1[3]}
-                    </div>
-                  </div>
+                  {eastRound1Winners.every(w => w !== null) ? (
+                    [
+                      { team1: eastRound1Winners[0], team2: eastRound1Winners[1] },
+                      { team1: eastRound1Winners[2], team2: eastRound1Winners[3] }
+                    ].map((matchup, idx) => {
+                      const winner = eastRound2Winners[idx];
+                      if (winner) {
+                        return (
+                          <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team1}
+                            </div>
+                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team2}
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                            <button
+                              onClick={() => setEastRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
+                              className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team1}
+                            </button>
+                            <button
+                              onClick={() => setEastRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
+                              className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team2}
+                            </button>
+                          </div>
+                        );
+                      }
+                    })
+                  ) : (
+                    <div className="text-gray-500 text-center mt-12">Complete Round 1 first</div>
+                  )}
                 </div>
 
                 {/* Conference Finals */}
                 <div className="space-y-4">
                   <h3 className="text-white font-semibold text-center mb-4">Conference Final</h3>
-                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
-                    <div className={`text-sm mb-1 ${eastResults.final === eastResults.round2[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {eastResults.round2[0]}
-                    </div>
-                    <div className={`text-sm ${eastResults.final === eastResults.round2[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {eastResults.round2[1]}
-                    </div>
-                  </div>
+                  {eastRound2Winners.every(w => w !== null) ? (
+                    (() => {
+                      const matchup = { team1: eastRound2Winners[0], team2: eastRound2Winners[1] };
+                      const winner = eastFinal;
+                      if (winner) {
+                        return (
+                          <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
+                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team1}
+                            </div>
+                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team2}
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
+                            <button
+                              onClick={() => setEastFinal(matchup.team1)}
+                              className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team1}
+                            </button>
+                            <button
+                              onClick={() => setEastFinal(matchup.team2)}
+                              className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team2}
+                            </button>
+                          </div>
+                        );
+                      }
+                    })()
+                  ) : (
+                    <div className="text-gray-500 text-center mt-32">Complete Round 2 first</div>
+                  )}
                 </div>
 
                 {/* Conference Champion */}
@@ -193,7 +245,7 @@ export default function NHLBracketGenerator() {
                   <h3 className="text-white font-semibold text-center mb-4">Champion</h3>
                   <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-4 border-2 border-blue-400 mt-32">
                     <div className="text-white font-bold text-center">
-                      {eastResults.final}
+                      {eastFinal || 'TBD'}
                     </div>
                   </div>
                 </div>
@@ -210,50 +262,124 @@ export default function NHLBracketGenerator() {
                 {/* Round 1 */}
                 <div className="space-y-4">
                   <h3 className="text-white font-semibold text-center mb-4">Round 1</h3>
-                  {bracket.westMatchups.map((matchup, idx) => (
-                    <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
-                      <div className={`text-sm mb-1 ${westResults.round1[idx] === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                        {matchup.seed1}: {matchup.team1}
-                      </div>
-                      <div className={`text-sm ${westResults.round1[idx] === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                        {matchup.seed2}: {matchup.team2}
-                      </div>
-                    </div>
-                  ))}
+                  {bracket.westMatchups.map((matchup, idx) => {
+                    const winner = westRound1Winners[idx];
+                    if (winner) {
+                      return (
+                        <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
+                          <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                            {matchup.seed1}: {matchup.team1}
+                          </div>
+                          <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                            {matchup.seed2}: {matchup.team2}
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600">
+                          <button
+                            onClick={() => setWestRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
+                            className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                          >
+                            {matchup.seed1}: {matchup.team1}
+                          </button>
+                          <button
+                            onClick={() => setWestRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
+                            className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                          >
+                            {matchup.seed2}: {matchup.team2}
+                          </button>
+                        </div>
+                      );
+                    }
+                  })}
                 </div>
 
                 {/* Round 2 */}
                 <div className="space-y-4">
                   <h3 className="text-white font-semibold text-center mb-4">Round 2</h3>
-                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
-                    <div className={`text-sm mb-1 ${westResults.round2[0] === westResults.round1[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {westResults.round1[0]}
-                    </div>
-                    <div className={`text-sm ${westResults.round2[0] === westResults.round1[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {westResults.round1[1]}
-                    </div>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
-                    <div className={`text-sm mb-1 ${westResults.round2[1] === westResults.round1[2] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {westResults.round1[2]}
-                    </div>
-                    <div className={`text-sm ${westResults.round2[1] === westResults.round1[3] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {westResults.round1[3]}
-                    </div>
-                  </div>
+                  {westRound1Winners.every(w => w !== null) ? (
+                    [
+                      { team1: westRound1Winners[0], team2: westRound1Winners[1] },
+                      { team1: westRound1Winners[2], team2: westRound1Winners[3] }
+                    ].map((matchup, idx) => {
+                      const winner = westRound2Winners[idx];
+                      if (winner) {
+                        return (
+                          <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team1}
+                            </div>
+                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team2}
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
+                            <button
+                              onClick={() => setWestRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
+                              className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team1}
+                            </button>
+                            <button
+                              onClick={() => setWestRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
+                              className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team2}
+                            </button>
+                          </div>
+                        );
+                      }
+                    })
+                  ) : (
+                    <div className="text-gray-500 text-center mt-12">Complete Round 1 first</div>
+                  )}
                 </div>
 
                 {/* Conference Finals */}
                 <div className="space-y-4">
                   <h3 className="text-white font-semibold text-center mb-4">Conference Final</h3>
-                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
-                    <div className={`text-sm mb-1 ${westResults.final === westResults.round2[0] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {westResults.round2[0]}
-                    </div>
-                    <div className={`text-sm ${westResults.final === westResults.round2[1] ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                      {westResults.round2[1]}
-                    </div>
-                  </div>
+                  {westRound2Winners.every(w => w !== null) ? (
+                    (() => {
+                      const matchup = { team1: westRound2Winners[0], team2: westRound2Winners[1] };
+                      const winner = westFinal;
+                      if (winner) {
+                        return (
+                          <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
+                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team1}
+                            </div>
+                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                              {matchup.team2}
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
+                            <button
+                              onClick={() => setWestFinal(matchup.team1)}
+                              className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team1}
+                            </button>
+                            <button
+                              onClick={() => setWestFinal(matchup.team2)}
+                              className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
+                            >
+                              {matchup.team2}
+                            </button>
+                          </div>
+                        );
+                      }
+                    })()
+                  ) : (
+                    <div className="text-gray-500 text-center mt-32">Complete Round 2 first</div>
+                  )}
                 </div>
 
                 {/* Conference Champion */}
@@ -261,7 +387,7 @@ export default function NHLBracketGenerator() {
                   <h3 className="text-white font-semibold text-center mb-4">Champion</h3>
                   <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-lg p-4 border-2 border-red-400 mt-32">
                     <div className="text-white font-bold text-center">
-                      {westResults.final}
+                      {westFinal || 'TBD'}
                     </div>
                   </div>
                 </div>
@@ -276,8 +402,8 @@ export default function NHLBracketGenerator() {
               <div className="grid grid-cols-3 gap-8 items-center">
                 <div className="bg-white/20 rounded-lg p-6 text-center">
                   <div className="text-sm text-yellow-200 mb-2">Eastern Champion</div>
-                  <div className={`text-xl font-bold ${champion === eastResults.final ? 'text-white' : 'text-gray-300'}`}>
-                    {eastResults.final}
+                  <div className={`text-xl font-bold ${champion === eastFinal ? 'text-white' : 'text-gray-300'}`}>
+                    {eastFinal || 'TBD'}
                   </div>
                 </div>
                 
@@ -287,17 +413,34 @@ export default function NHLBracketGenerator() {
                 
                 <div className="bg-white/20 rounded-lg p-6 text-center">
                   <div className="text-sm text-yellow-200 mb-2">Western Champion</div>
-                  <div className={`text-xl font-bold ${champion === westResults.final ? 'text-white' : 'text-gray-300'}`}>
-                    {westResults.final}
+                  <div className={`text-xl font-bold ${champion === westFinal ? 'text-white' : 'text-gray-300'}`}>
+                    {westFinal || 'TBD'}
                   </div>
                 </div>
               </div>
               
               <div className="mt-8 text-center">
                 <div className="text-yellow-200 text-sm mb-2">Stanley Cup Champion</div>
-                <div className="text-4xl font-bold text-white">
-                  {champion}
-                </div>
+                {eastFinal && westFinal && !champion ? (
+                  <div className="flex justify-center gap-4">
+                    <button
+                      onClick={() => setChampion(eastFinal)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold"
+                    >
+                      {eastFinal}
+                    </button>
+                    <button
+                      onClick={() => setChampion(westFinal)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold"
+                    >
+                      {westFinal}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-4xl font-bold text-white">
+                    {champion || 'TBD'}
+                  </div>
+                )}
               </div>
             </div>
           </div>
