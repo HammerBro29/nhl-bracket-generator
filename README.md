@@ -20,7 +20,10 @@ npm install
 npm run dev
 ```
 
-3. Open your browser to `http://localhost:5173`
+3. Open your browser to `http://localhost:5175`
+# Double check port before launching app in browser
+# If specificed port (5175) is busy then server will automatically run in next available port (i.e 5176, etc.)
+
 
 ## Build for Production
 ```bash
