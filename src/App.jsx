@@ -97,8 +97,7 @@ const TeamDisplay = ({ teamName, isWinner = false, isButton = false, onClick }) 
 
 // Bracket Generation Logic
 const generatePlayoffBracket = () => {
-  console.log('generatePlayoffBracket called');
-  console.log('NHL_TEAMS:', NHL_TEAMS);
+  // Randomly select playoff teams (3 from each division + 2 wildcards per conference)
   const getRandomTeams = (division, count) => {
     const shuffled = [...NHL_TEAMS[division]].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, count);
@@ -140,7 +139,6 @@ const generatePlayoffBracket = () => {
 
 // Component
 export default function NHLBracketGenerator() {
-  console.log('Component rendered, NHL_TEAMS available:', !!NHL_TEAMS);
   const [bracket, setBracket] = useState(null);
   const [eastRound1Winners, setEastRound1Winners] = useState([]);
   const [eastRound2Winners, setEastRound2Winners] = useState([]);
@@ -172,9 +170,9 @@ export default function NHLBracketGenerator() {
           </h1>
           <button
             onClick={generateNewBracket}
-            className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-1"
+            className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300"
           >
-            <RefreshCw size={24} className="animate-spin" />
+            <RefreshCw size={24} />
             Generate Random Bracket
           </button>
         </div>
