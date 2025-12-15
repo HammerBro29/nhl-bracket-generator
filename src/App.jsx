@@ -95,14 +95,14 @@ export default function NHLBracketGenerator() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-6xl font-extrabold text-white mb-6 drop-shadow-lg bg-gradient-to-r from-blue-400 via-white to-red-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold text-white mb-4">
             🏒 NHL Stanley Cup Playoff Bracket
           </h1>
           <button
             onClick={generateNewBracket}
-            className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-1"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all transform hover:scale-105"
           >
-            <RefreshCw size={24} className="animate-spin" />
+            <RefreshCw size={20} />
             Generate Random Bracket
           </button>
         </div>
@@ -111,9 +111,9 @@ export default function NHLBracketGenerator() {
         {bracket && (
           <div className="space-y-8">
             {/* Eastern Conference */}
-            <div className="bg-gradient-to-br from-blue-900/20 to-slate-900/20 backdrop-blur-md rounded-2xl p-8 border border-blue-500/30 shadow-2xl hover:shadow-3xl transition-all duration-500">
-              <h2 className="text-4xl font-bold text-blue-300 mb-8 text-center drop-shadow-lg">
-                Eastern Conference 🏒
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-3xl font-bold text-blue-300 mb-6 text-center">
+                Eastern Conference
               </h2>
               
               <div className="grid grid-cols-4 gap-4">
@@ -125,10 +125,10 @@ export default function NHLBracketGenerator() {
                     if (winner) {
                       return (
                         <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 shadow-lg">
-                          <div className={`text-sm mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'text-green-400 font-bold ring-2 ring-green-400 ring-opacity-75 animate-pulse' : 'text-gray-400'}`}>
+                          <div className={`text-sm mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
                             {matchup.seed1}: {matchup.team1}
                           </div>
-                          <div className={`text-sm transition-all duration-300 ${winner === matchup.team2 ? 'text-green-400 font-bold ring-2 ring-green-400 ring-opacity-75 animate-pulse' : 'text-gray-400'}`}>
+                          <div className={`text-sm transition-all duration-300 ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
                             {matchup.seed2}: {matchup.team2}
                           </div>
                         </div>
@@ -253,9 +253,9 @@ export default function NHLBracketGenerator() {
             </div>
 
             {/* Western Conference */}
-            <div className="bg-gradient-to-br from-red-900/20 to-slate-900/20 backdrop-blur-md rounded-2xl p-8 border border-red-500/30 shadow-2xl hover:shadow-3xl transition-all duration-500">
-              <h2 className="text-4xl font-bold text-red-300 mb-8 text-center drop-shadow-lg">
-                Western Conference 🏒
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <h2 className="text-3xl font-bold text-red-300 mb-6 text-center">
+                Western Conference
               </h2>
               
               <div className="grid grid-cols-4 gap-4">
@@ -267,10 +267,10 @@ export default function NHLBracketGenerator() {
                     if (winner) {
                       return (
                         <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 shadow-lg">
-                          <div className={`text-sm mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'text-green-400 font-bold ring-2 ring-green-400 ring-opacity-75 animate-pulse' : 'text-gray-400'}`}>
+                          <div className={`text-sm mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
                             {matchup.seed1}: {matchup.team1}
                           </div>
-                          <div className={`text-sm transition-all duration-300 ${winner === matchup.team2 ? 'text-green-400 font-bold ring-2 ring-green-400 ring-opacity-75 animate-pulse' : 'text-gray-400'}`}>
+                          <div className={`text-sm transition-all duration-300 ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
                             {matchup.seed2}: {matchup.team2}
                           </div>
                         </div>
@@ -395,25 +395,25 @@ export default function NHLBracketGenerator() {
             </div>
 
             {/* Stanley Cup Final */}
-            <div className="bg-gradient-to-r from-yellow-600/30 via-gold-500/20 to-yellow-600/30 rounded-3xl p-10 border-4 border-yellow-400/50 shadow-2xl backdrop-blur-lg">
-              <h2 className="text-5xl font-bold text-yellow-300 mb-8 text-center drop-shadow-2xl animate-bounce">
+            <div className="bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-xl p-8 border-4 border-yellow-400">
+              <h2 className="text-4xl font-bold text-white mb-6 text-center">
                 🏆 STANLEY CUP FINAL 🏆
               </h2>
               <div className="grid grid-cols-3 gap-8 items-center">
-                <div className="bg-gradient-to-br from-blue-600/40 to-blue-800/40 rounded-xl p-8 text-center shadow-xl border border-blue-400/50">
-                  <div className="text-sm text-blue-200 mb-3 font-semibold">Eastern Champion</div>
-                  <div className={`text-2xl font-bold transition-all duration-500 ${champion === eastFinal ? 'text-yellow-300 scale-110 animate-pulse' : 'text-white'}`}>
+                <div className="bg-white/20 rounded-lg p-6 text-center">
+                  <div className="text-sm text-yellow-200 mb-2">Eastern Champion</div>
+                  <div className={`text-xl font-bold ${champion === eastFinal ? 'text-white' : 'text-gray-300'}`}>
                     {eastFinal || 'TBD'}
                   </div>
                 </div>
                 
-                <div className="text-center text-yellow-300 text-3xl font-bold animate-pulse">
+                <div className="text-center text-white text-2xl font-bold">
                   VS
                 </div>
                 
-                <div className="bg-gradient-to-br from-red-600/40 to-red-800/40 rounded-xl p-8 text-center shadow-xl border border-red-400/50">
-                  <div className="text-sm text-red-200 mb-3 font-semibold">Western Champion</div>
-                  <div className={`text-2xl font-bold transition-all duration-500 ${champion === westFinal ? 'text-yellow-300 scale-110 animate-pulse' : 'text-white'}`}>
+                <div className="bg-white/20 rounded-lg p-6 text-center">
+                  <div className="text-sm text-yellow-200 mb-2">Western Champion</div>
+                  <div className={`text-xl font-bold ${champion === westFinal ? 'text-white' : 'text-gray-300'}`}>
                     {westFinal || 'TBD'}
                   </div>
                 </div>
@@ -425,19 +425,19 @@ export default function NHLBracketGenerator() {
                   <div className="flex justify-center gap-6">
                     <button
                       onClick={() => setChampion(eastFinal)}
-                      className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold"
                     >
                       {eastFinal}
                     </button>
                     <button
                       onClick={() => setChampion(westFinal)}
-                      className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold"
                     >
                       {westFinal}
                     </button>
                   </div>
                 ) : (
-                  <div className="text-5xl font-bold text-yellow-300 drop-shadow-lg animate-bounce">
+                  <div className="text-4xl font-bold text-white">
                     {champion || 'TBD'}
                   </div>
                 )}
