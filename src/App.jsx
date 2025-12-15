@@ -1,6 +1,42 @@
 import React, { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 
+// NHL Team IDs for logos
+const TEAM_LOGOS = {
+  'Florida Panthers': 13,
+  'Toronto Maple Leafs': 10,
+  'Tampa Bay Lightning': 14,
+  'Boston Bruins': 6,
+  'Buffalo Sabres': 7,
+  'Ottawa Senators': 9,
+  'Detroit Red Wings': 17,
+  'Montreal Canadiens': 8,
+  'Carolina Hurricanes': 12,
+  'New York Rangers': 3,
+  'Washington Capitals': 15,
+  'New York Islanders': 2,
+  'Pittsburgh Penguins': 5,
+  'Philadelphia Flyers': 4,
+  'New Jersey Devils': 1,
+  'Columbus Blue Jackets': 29,
+  'Dallas Stars': 25,
+  'Colorado Avalanche': 21,
+  'Winnipeg Jets': 52,
+  'Nashville Predators': 18,
+  'Minnesota Wild': 30,
+  'St. Louis Blues': 19,
+  'Arizona Coyotes': 53,
+  'Chicago Blackhawks': 16,
+  'Vegas Golden Knights': 54,
+  'Edmonton Oilers': 22,
+  'Los Angeles Kings': 26,
+  'Vancouver Canucks': 23,
+  'Seattle Kraken': 55,
+  'Calgary Flames': 20,
+  'Anaheim Ducks': 24,
+  'San Jose Sharks': 28
+};
+
 // NHL Teams Data - organized by division
 const NHL_TEAMS = {
   atlantic: [
@@ -16,7 +52,7 @@ const NHL_TEAMS = {
   central: [
     'Dallas Stars', 'Colorado Avalanche', 'Winnipeg Jets',
     'Nashville Predators', 'Minnesota Wild', 'St. Louis Blues',
-    'Utah Mammoth', 'Chicago Blackhawks'
+    'Arizona Coyotes', 'Chicago Blackhawks'
   ],
   pacific: [
     'Vegas Golden Knights', 'Edmonton Oilers', 'Los Angeles Kings',
@@ -25,9 +61,44 @@ const NHL_TEAMS = {
   ]
 };
 
+// Component to render team with logo
+const TeamDisplay = ({ teamName, isWinner = false, isButton = false, onClick }) => {
+  const teamId = TEAM_LOGOS[teamName];
+  const logoUrl = teamId ? `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${teamId}.svg` : null;
+
+  const content = (
+    <div className={`flex items-center gap-2 ${isButton ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}>
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          alt={`${teamName} logo`}
+          className="w-6 h-6 object-contain"
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
+      )}
+      <span className={isWinner ? 'text-green-400 font-bold' : 'text-gray-300'}>
+        {teamName}
+      </span>
+    </div>
+  );
+
+  if (isButton) {
+    return (
+      <button onClick={onClick} className="w-full text-left p-2 rounded-lg hover:bg-opacity-20 transition-all">
+        {content}
+      </button>
+    );
+  }
+
+  return content;
+};
+
 // Bracket Generation Logic
 const generatePlayoffBracket = () => {
-  // Randomly select playoff teams (3 from each division + 2 wildcards per conference)
+  console.log('generatePlayoffBracket called');
+  console.log('NHL_TEAMS:', NHL_TEAMS);
   const getRandomTeams = (division, count) => {
     const shuffled = [...NHL_TEAMS[division]].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, count);
@@ -69,6 +140,7 @@ const generatePlayoffBracket = () => {
 
 // Component
 export default function NHLBracketGenerator() {
+  console.log('Component rendered, NHL_TEAMS available:', !!NHL_TEAMS);
   const [bracket, setBracket] = useState(null);
   const [eastRound1Winners, setEastRound1Winners] = useState([]);
   const [eastRound2Winners, setEastRound2Winners] = useState([]);
@@ -95,14 +167,14 @@ export default function NHLBracketGenerator() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">
+          <h1 className="text-6xl font-extrabold text-white mb-6 drop-shadow-lg bg-gradient-to-r from-blue-400 via-white to-red-400 bg-clip-text text-transparent">
             🏒 NHL Stanley Cup Playoff Bracket
           </h1>
           <button
             onClick={generateNewBracket}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all transform hover:scale-105"
+            className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-1"
           >
-            <RefreshCw size={20} />
+            <RefreshCw size={24} className="animate-spin" />
             Generate Random Bracket
           </button>
         </div>
@@ -111,9 +183,9 @@ export default function NHLBracketGenerator() {
         {bracket && (
           <div className="space-y-8">
             {/* Eastern Conference */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <h2 className="text-3xl font-bold text-blue-300 mb-6 text-center">
-                Eastern Conference
+            <div className="bg-gradient-to-br from-blue-900/20 to-slate-900/20 backdrop-blur-md rounded-2xl p-8 border border-blue-500/30 shadow-2xl hover:shadow-3xl transition-all duration-500">
+              <h2 className="text-4xl font-bold text-blue-300 mb-8 text-center drop-shadow-lg">
+                Eastern Conference 🏒
               </h2>
               
               <div className="grid grid-cols-4 gap-4">
@@ -125,11 +197,11 @@ export default function NHLBracketGenerator() {
                     if (winner) {
                       return (
                         <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 shadow-lg">
-                          <div className={`text-sm mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                            {matchup.seed1}: {matchup.team1}
+                          <div className={`mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                            <TeamDisplay teamName={matchup.team1} isWinner={winner === matchup.team1} />
                           </div>
-                          <div className={`text-sm transition-all duration-300 ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                            {matchup.seed2}: {matchup.team2}
+                          <div className={`transition-all duration-300 ${winner === matchup.team2 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                            <TeamDisplay teamName={matchup.team2} isWinner={winner === matchup.team2} />
                           </div>
                         </div>
                       );
@@ -140,13 +212,13 @@ export default function NHLBracketGenerator() {
                             onClick={() => setEastRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
                             className="text-sm mb-1 w-full text-left hover:bg-blue-600/50 p-3 rounded-lg text-gray-300 transition-all duration-200 hover:shadow-md hover:scale-105"
                           >
-                            {matchup.seed1}: {matchup.team1}
+                            <TeamDisplay teamName={matchup.team1} />
                           </button>
                           <button
                             onClick={() => setEastRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
                             className="text-sm w-full text-left hover:bg-blue-600/50 p-3 rounded-lg text-gray-300 transition-all duration-200 hover:shadow-md hover:scale-105"
                           >
-                            {matchup.seed2}: {matchup.team2}
+                            <TeamDisplay teamName={matchup.team2} />
                           </button>
                         </div>
                       );
@@ -166,11 +238,11 @@ export default function NHLBracketGenerator() {
                       if (winner) {
                         return (
                           <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
-                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team1}
+                            <div className={`mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team1} isWinner={winner === matchup.team1} />
                             </div>
-                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team2}
+                            <div className={`transition-all duration-300 ${winner === matchup.team2 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team2} isWinner={winner === matchup.team2} />
                             </div>
                           </div>
                         );
@@ -181,13 +253,13 @@ export default function NHLBracketGenerator() {
                               onClick={() => setEastRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
                               className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team1}
+                              <TeamDisplay teamName={matchup.team1} />
                             </button>
                             <button
                               onClick={() => setEastRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
                               className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team2}
+                              <TeamDisplay teamName={matchup.team2} />
                             </button>
                           </div>
                         );
@@ -208,11 +280,11 @@ export default function NHLBracketGenerator() {
                       if (winner) {
                         return (
                           <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
-                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team1}
+                            <div className={`mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team1} isWinner={winner === matchup.team1} />
                             </div>
-                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team2}
+                            <div className={`transition-all duration-300 ${winner === matchup.team2 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team2} isWinner={winner === matchup.team2} />
                             </div>
                           </div>
                         );
@@ -223,13 +295,13 @@ export default function NHLBracketGenerator() {
                               onClick={() => setEastFinal(matchup.team1)}
                               className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team1}
+                              <TeamDisplay teamName={matchup.team1} />
                             </button>
                             <button
                               onClick={() => setEastFinal(matchup.team2)}
                               className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team2}
+                              <TeamDisplay teamName={matchup.team2} />
                             </button>
                           </div>
                         );
@@ -253,9 +325,9 @@ export default function NHLBracketGenerator() {
             </div>
 
             {/* Western Conference */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <h2 className="text-3xl font-bold text-red-300 mb-6 text-center">
-                Western Conference
+            <div className="bg-gradient-to-br from-red-900/20 to-slate-900/20 backdrop-blur-md rounded-2xl p-8 border border-red-500/30 shadow-2xl hover:shadow-3xl transition-all duration-500">
+              <h2 className="text-4xl font-bold text-red-300 mb-8 text-center drop-shadow-lg">
+                Western Conference 🏒
               </h2>
               
               <div className="grid grid-cols-4 gap-4">
@@ -267,11 +339,11 @@ export default function NHLBracketGenerator() {
                     if (winner) {
                       return (
                         <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 shadow-lg">
-                          <div className={`text-sm mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                            {matchup.seed1}: {matchup.team1}
+                          <div className={`mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                            <TeamDisplay teamName={matchup.team1} isWinner={winner === matchup.team1} />
                           </div>
-                          <div className={`text-sm transition-all duration-300 ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                            {matchup.seed2}: {matchup.team2}
+                          <div className={`transition-all duration-300 ${winner === matchup.team2 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                            <TeamDisplay teamName={matchup.team2} isWinner={winner === matchup.team2} />
                           </div>
                         </div>
                       );
@@ -282,13 +354,13 @@ export default function NHLBracketGenerator() {
                             onClick={() => setWestRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
                             className="text-sm mb-1 w-full text-left hover:bg-red-600/50 p-3 rounded-lg text-gray-300 transition-all duration-200 hover:shadow-md hover:scale-105"
                           >
-                            {matchup.seed1}: {matchup.team1}
+                            <TeamDisplay teamName={matchup.team1} />
                           </button>
                           <button
                             onClick={() => setWestRound1Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
                             className="text-sm w-full text-left hover:bg-red-600/50 p-3 rounded-lg text-gray-300 transition-all duration-200 hover:shadow-md hover:scale-105"
                           >
-                            {matchup.seed2}: {matchup.team2}
+                            <TeamDisplay teamName={matchup.team2} />
                           </button>
                         </div>
                       );
@@ -308,11 +380,11 @@ export default function NHLBracketGenerator() {
                       if (winner) {
                         return (
                           <div key={idx} className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-12">
-                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team1}
+                            <div className={`mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team1} isWinner={winner === matchup.team1} />
                             </div>
-                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team2}
+                            <div className={`transition-all duration-300 ${winner === matchup.team2 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team2} isWinner={winner === matchup.team2} />
                             </div>
                           </div>
                         );
@@ -323,13 +395,13 @@ export default function NHLBracketGenerator() {
                               onClick={() => setWestRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team1; return newW; })}
                               className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team1}
+                              <TeamDisplay teamName={matchup.team1} />
                             </button>
                             <button
                               onClick={() => setWestRound2Winners(prev => { const newW = [...prev]; newW[idx] = matchup.team2; return newW; })}
                               className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team2}
+                              <TeamDisplay teamName={matchup.team2} />
                             </button>
                           </div>
                         );
@@ -350,11 +422,11 @@ export default function NHLBracketGenerator() {
                       if (winner) {
                         return (
                           <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 mt-32">
-                            <div className={`text-sm mb-1 ${winner === matchup.team1 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team1}
+                            <div className={`mb-1 transition-all duration-300 ${winner === matchup.team1 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team1} isWinner={winner === matchup.team1} />
                             </div>
-                            <div className={`text-sm ${winner === matchup.team2 ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                              {matchup.team2}
+                            <div className={`transition-all duration-300 ${winner === matchup.team2 ? 'ring-2 ring-green-400 ring-opacity-75 animate-pulse rounded p-1' : ''}`}>
+                              <TeamDisplay teamName={matchup.team2} isWinner={winner === matchup.team2} />
                             </div>
                           </div>
                         );
@@ -365,13 +437,13 @@ export default function NHLBracketGenerator() {
                               onClick={() => setWestFinal(matchup.team1)}
                               className="text-sm mb-1 w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team1}
+                              <TeamDisplay teamName={matchup.team1} />
                             </button>
                             <button
                               onClick={() => setWestFinal(matchup.team2)}
                               className="text-sm w-full text-left hover:bg-slate-700 p-2 rounded text-gray-300"
                             >
-                              {matchup.team2}
+                              <TeamDisplay teamName={matchup.team2} />
                             </button>
                           </div>
                         );
@@ -395,26 +467,26 @@ export default function NHLBracketGenerator() {
             </div>
 
             {/* Stanley Cup Final */}
-            <div className="bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-xl p-8 border-4 border-yellow-400">
-              <h2 className="text-4xl font-bold text-white mb-6 text-center">
+            <div className="bg-gradient-to-r from-yellow-600/30 via-gold-500/20 to-yellow-600/30 rounded-3xl p-10 border-4 border-yellow-400/50 shadow-2xl backdrop-blur-lg">
+              <h2 className="text-5xl font-bold text-yellow-300 mb-8 text-center drop-shadow-2xl animate-bounce">
                 🏆 STANLEY CUP FINAL 🏆
               </h2>
               <div className="grid grid-cols-3 gap-8 items-center">
-                <div className="bg-white/20 rounded-lg p-6 text-center">
-                  <div className="text-sm text-yellow-200 mb-2">Eastern Champion</div>
-                  <div className={`text-xl font-bold ${champion === eastFinal ? 'text-white' : 'text-gray-300'}`}>
-                    {eastFinal || 'TBD'}
+                <div className="bg-gradient-to-br from-blue-600/40 to-blue-800/40 rounded-xl p-8 text-center shadow-xl border border-blue-400/50">
+                  <div className="text-sm text-blue-200 mb-3 font-semibold">Eastern Champion</div>
+                  <div className={`text-2xl font-bold transition-all duration-500 ${champion === eastFinal ? 'text-yellow-300 scale-110 animate-pulse' : 'text-white'}`}>
+                    {eastFinal ? <TeamDisplay teamName={eastFinal} /> : 'TBD'}
                   </div>
                 </div>
                 
-                <div className="text-center text-white text-2xl font-bold">
+                <div className="text-center text-yellow-300 text-3xl font-bold animate-pulse">
                   VS
                 </div>
                 
-                <div className="bg-white/20 rounded-lg p-6 text-center">
-                  <div className="text-sm text-yellow-200 mb-2">Western Champion</div>
-                  <div className={`text-xl font-bold ${champion === westFinal ? 'text-white' : 'text-gray-300'}`}>
-                    {westFinal || 'TBD'}
+                <div className="bg-gradient-to-br from-red-600/40 to-red-800/40 rounded-xl p-8 text-center shadow-xl border border-red-400/50">
+                  <div className="text-sm text-red-200 mb-3 font-semibold">Western Champion</div>
+                  <div className={`text-2xl font-bold transition-all duration-500 ${champion === westFinal ? 'text-yellow-300 scale-110 animate-pulse' : 'text-white'}`}>
+                    {westFinal ? <TeamDisplay teamName={westFinal} /> : 'TBD'}
                   </div>
                 </div>
               </div>
@@ -425,20 +497,20 @@ export default function NHLBracketGenerator() {
                   <div className="flex justify-center gap-6">
                     <button
                       onClick={() => setChampion(eastFinal)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold"
+                      className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
                     >
-                      {eastFinal}
+                      <TeamDisplay teamName={eastFinal} />
                     </button>
                     <button
                       onClick={() => setChampion(westFinal)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold"
+                      className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
                     >
-                      {westFinal}
+                      <TeamDisplay teamName={westFinal} />
                     </button>
                   </div>
                 ) : (
-                  <div className="text-4xl font-bold text-white">
-                    {champion || 'TBD'}
+                  <div className="text-5xl font-bold text-yellow-300 drop-shadow-lg animate-bounce">
+                    {champion ? <TeamDisplay teamName={champion} /> : 'TBD'}
                   </div>
                 )}
               </div>
